@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#fafafa">
+    <title>Upload Photos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #fafafa;
+            color: #333;
+            min-height: 100dvh;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            -webkit-text-size-adjust: 100%;
+        }
+
+        .container {
+            max-width: 480px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100dvh;
+            justify-content: center;
+        }
+
+        /* When uploads are happening, align to top so list can scroll */
+        .container.has-uploads {
+            justify-content: flex-start;
+            padding-top: 3rem;
+        }
+
+        .subtitle {
+            font-size: 1.05rem;
+            color: #666;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            padding: 3rem 1.5rem;
+            transition: border-color 0.2s, background-color 0.2s;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+            width: 100%;
+        }
+
+        .drop-zone:active {
+            background-color: #f0f7fa;
+            border-color: #4A90A4;
+        }
+
+        .drop-zone.dragover {
+            border-color: #4A90A4;
+            background-color: #f0f7fa;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            background: #4A90A4;
+            color: #fff;
+            border: none;
+            padding: 1.1rem 2.5rem;
+            font-size: 1.15rem;
+            font-weight: 500;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+            max-width: 320px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .upload-btn:hover {
+            background: #3d7a8c;
+        }
+
+        .upload-btn:active {
+            background: #356b7a;
+            transform: scale(0.98);
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-top: 1rem;
+        }
+
+        /* Hide drag-and-drop hint on touch devices */
+        @media (hover: none) and (pointer: coarse) {
+            .hint {
+                display: none;
+            }
+
+            .drop-zone {
+                padding: 2.5rem 1.5rem;
+            }
+        }
+
+        .progress-list {
+            margin-top: 1.5rem;
+            text-align: left;
+            width: 100%;
+        }
+
+        .progress-item {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-item .filename {
+            font-size: 0.85rem;
+            color: #555;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .progress-bar-container {
+            background: #eee;
+            border-radius: 3px;
+            height: 6px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #4A90A4;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-bar.complete {
+            background: #5cb85c;
+        }
+
+        .progress-bar.error {
+            background: #d9534f;
+        }
+
+        .progress-status {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 0.35rem;
+        }
+
+        .progress-status.complete {
+            color: #5cb85c;
+        }
+
+        .progress-status.error {
+            color: #d9534f;
+        }
+
+        .summary {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #5cb85c;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="container">
+        <p class="subtitle">Ajoutez vos plus belles photos en appuyant sur le bouton ci-dessous</p>
+
+        <div class="drop-zone" id="dropZone">
+            <input type="file" id="fileInput" multiple accept="image/*" hidden>
+            <button class="upload-btn" id="uploadBtn">Choisir des photos</button>
+            <p class="hint">ou glissez-d&eacute;posez ici</p>
+        </div>
+
+        <div class="progress-list" id="progressList"></div>
+        <div class="summary" id="summary"></div>
+    </div>
+
+    <script>
+        const container = document.getElementById('container');
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const progressList = document.getElementById('progressList');
+        const summary = document.getElementById('summary');
+
+        uploadBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fileInput.click();
+        });
+
+        dropZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                uploadFiles(fileInput.files);
+                fileInput.value = '';
+            }
+        });
+
+        // Drag and drop (desktop only, gracefully ignored on mobile)
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                uploadFiles(files);
+            }
+        });
+
+        let totalFiles = 0;
+        let completedFiles = 0;
+
+        function uploadFiles(files) {
+            summary.textContent = '';
+            totalFiles += files.length;
+            container.classList.add('has-uploads');
+            for (const file of files) {
+                uploadFile(file);
+            }
+            // Scroll to progress list on mobile
+            setTimeout(() => {
+                progressList.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        function uploadFile(file) {
+            const item = document.createElement('div');
+            item.className = 'progress-item';
+            item.innerHTML = `
+                <div class="filename">${escapeHtml(file.name)}</div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar"></div>
+                </div>
+                <div class="progress-status">0%</div>
+            `;
+            progressList.appendChild(item);
+
+            const bar = item.querySelector('.progress-bar');
+            const status = item.querySelector('.progress-status');
+
+            const xhr = new XMLHttpRequest();
+            const formData = new FormData();
+            formData.append('photo', file);
+
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const pct = Math.round((e.loaded / e.total) * 100);
+                    bar.style.width = pct + '%';
+                    status.textContent = pct + '%';
+                }
+            });
+
+            xhr.addEventListener('load', () => {
+                completedFiles++;
+                if (xhr.status === 200) {
+                    bar.style.width = '100%';
+                    bar.classList.add('complete');
+                    status.textContent = 'Termin\u00e9';
+                    status.classList.add('complete');
+                } else {
+                    bar.classList.add('error');
+                    status.textContent = 'Erreur: ' + xhr.statusText;
+                    status.classList.add('error');
+                }
+                checkAllDone();
+            });
+
+            xhr.addEventListener('error', () => {
+                completedFiles++;
+                bar.classList.add('error');
+                status.textContent = 'Erreur r\u00e9seau';
+                status.classList.add('error');
+                checkAllDone();
+            });
+
+            xhr.open('POST', '/upload');
+            xhr.send(formData);
+        }
+
+        function checkAllDone() {
+            if (completedFiles === totalFiles) {
+                summary.textContent = totalFiles + ' photo' + (totalFiles > 1 ? 's' : '') + ' envoy\u00e9e' + (totalFiles > 1 ? 's' : '');
+                summary.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

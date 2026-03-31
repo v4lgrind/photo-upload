@@ -1,0 +1,23 @@
+services:
+  photo-upload:
+    build: .
+    expose:
+      - "8080"
+    volumes:
+      - ./photos:/uploads
+    environment:
+      - UPLOAD_DIR=/uploads
+      - MAX_FILE_SIZE=300
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.photo-upload.rule=Host(`photos.example.com`)"
+      - "traefik.http.routers.photo-upload.entrypoints=websecure"
+      - "traefik.http.routers.photo-upload.tls.certresolver=letsencrypt"
+      - "traefik.http.services.photo-upload.loadbalancer.server.port=8080"
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true
