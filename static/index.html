@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="theme-color" content="#fafafa">
+    <meta name="theme-color" content="#fff5f0">
     <title>Upload Photos</title>
     <style>
         * {
@@ -16,11 +16,51 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #fafafa;
+            background: linear-gradient(180deg, #fff5f0 0%, #fde6ec 55%, #f7e1d4 100%);
             color: #333;
             min-height: 100dvh;
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
             -webkit-text-size-adjust: 100%;
+        }
+
+        .decorations {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .flower {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            opacity: 0.78;
+            filter: drop-shadow(0 2px 4px rgba(180, 120, 130, 0.12));
+        }
+
+        .flower-tl { top: -45px; left: -55px; transform: rotate(-18deg); color: #f6b2c4; }
+        .flower-tr { top: -60px; right: -60px; width: 210px; height: 210px; transform: rotate(28deg); color: #f9cbb5; opacity: 0.72; }
+        .flower-bl { bottom: -65px; left: -70px; width: 230px; height: 230px; transform: rotate(-32deg); color: #e8c8e0; opacity: 0.68; }
+        .flower-br { bottom: -50px; right: -55px; transform: rotate(22deg); color: #d8e5c0; }
+
+        .petal {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            opacity: 0.55;
+        }
+
+        .petal-1 { top: 18%; right: 8%; color: #f7c0ce; transform: rotate(15deg); }
+        .petal-2 { bottom: 22%; left: 6%; color: #f9d0b7; transform: rotate(-25deg); width: 60px; height: 60px; }
+
+        @media (max-width: 480px) {
+            .flower { width: 130px; height: 130px; }
+            .flower-tr { width: 150px; height: 150px; top: -40px; right: -45px; }
+            .flower-bl { width: 160px; height: 160px; bottom: -50px; left: -55px; }
+            .flower-br { width: 140px; height: 140px; }
+            .petal { width: 52px; height: 52px; }
+            .petal-2 { width: 44px; height: 44px; }
         }
 
         .container {
@@ -34,6 +74,36 @@
             align-items: center;
             min-height: 100dvh;
             justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .title {
+            font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: #c47b8a;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.02em;
+        }
+
+        .title-ornament {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-bottom: 1.2rem;
+            color: #d4a9b2;
+        }
+
+        .title-ornament::before,
+        .title-ornament::after {
+            content: "";
+            display: inline-block;
+            width: 40px;
+            height: 1px;
+            background: currentColor;
+            opacity: 0.6;
         }
 
         /* When uploads are happening, align to top so list can scroll */
@@ -43,32 +113,37 @@
         }
 
         .subtitle {
-            font-size: 1.05rem;
-            color: #666;
+            font-size: 1rem;
+            color: #7a5962;
             margin-bottom: 2rem;
-            line-height: 1.5;
+            line-height: 1.55;
+            font-style: italic;
         }
 
         .drop-zone {
-            border: 2px dashed #ccc;
-            border-radius: 12px;
+            border: 2px dashed #e8c4cf;
+            border-radius: 16px;
             padding: 3rem 1.5rem;
-            transition: border-color 0.2s, background-color 0.2s;
+            transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
             -webkit-user-select: none;
             user-select: none;
             width: 100%;
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            box-shadow: 0 4px 18px rgba(196, 123, 138, 0.08);
         }
 
         .drop-zone:active {
-            background-color: #f0f7fa;
-            border-color: #4A90A4;
+            background-color: rgba(255, 238, 242, 0.75);
+            border-color: #c47b8a;
         }
 
         .drop-zone.dragover {
-            border-color: #4A90A4;
-            background-color: #f0f7fa;
+            border-color: #c47b8a;
+            background-color: rgba(255, 238, 242, 0.75);
         }
 
         .upload-btn {
@@ -121,14 +196,15 @@
         }
 
         .progress-item {
-            background: #fff;
-            border: 1px solid #eee;
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(232, 196, 207, 0.5);
+            border-radius: 10px;
             padding: 0.75rem 1rem;
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
             gap: 0.75rem;
+            box-shadow: 0 2px 8px rgba(196, 123, 138, 0.06);
         }
 
         .progress-thumb {
@@ -204,7 +280,82 @@
     </style>
 </head>
 <body>
+    <div class="decorations" aria-hidden="true">
+        <svg class="flower flower-tl" viewBox="0 0 200 200">
+            <g transform="translate(100 100)">
+                <g>
+                    <ellipse cx="0" cy="-55" rx="24" ry="48" fill="currentColor"/>
+                    <ellipse cx="0" cy="-55" rx="24" ry="48" fill="currentColor" transform="rotate(60)"/>
+                    <ellipse cx="0" cy="-55" rx="24" ry="48" fill="currentColor" transform="rotate(120)"/>
+                    <ellipse cx="0" cy="-55" rx="24" ry="48" fill="currentColor" transform="rotate(180)"/>
+                    <ellipse cx="0" cy="-55" rx="24" ry="48" fill="currentColor" transform="rotate(240)"/>
+                    <ellipse cx="0" cy="-55" rx="24" ry="48" fill="currentColor" transform="rotate(300)"/>
+                </g>
+                <circle r="22" fill="#f4c27d"/>
+                <circle r="12" fill="#e09b4a"/>
+            </g>
+        </svg>
+        <svg class="flower flower-tr" viewBox="0 0 200 200">
+            <g transform="translate(100 100)">
+                <g>
+                    <ellipse cx="0" cy="-60" rx="20" ry="50" fill="currentColor"/>
+                    <ellipse cx="0" cy="-60" rx="20" ry="50" fill="currentColor" transform="rotate(45)"/>
+                    <ellipse cx="0" cy="-60" rx="20" ry="50" fill="currentColor" transform="rotate(90)"/>
+                    <ellipse cx="0" cy="-60" rx="20" ry="50" fill="currentColor" transform="rotate(135)"/>
+                    <ellipse cx="0" cy="-60" rx="20" ry="50" fill="currentColor" transform="rotate(180)"/>
+                    <ellipse cx="0" cy="-60" rx="20" ry="50" fill="currentColor" transform="rotate(225)"/>
+                    <ellipse cx="0" cy="-60" rx="20" ry="50" fill="currentColor" transform="rotate(270)"/>
+                    <ellipse cx="0" cy="-60" rx="20" ry="50" fill="currentColor" transform="rotate(315)"/>
+                </g>
+                <circle r="24" fill="#f7d89a"/>
+                <circle r="14" fill="#e6a555"/>
+            </g>
+        </svg>
+        <svg class="flower flower-bl" viewBox="0 0 200 200">
+            <g transform="translate(100 100)">
+                <circle cx="0" cy="-45" r="30" fill="currentColor"/>
+                <circle cx="40" cy="-15" r="30" fill="currentColor"/>
+                <circle cx="25" cy="38" r="30" fill="currentColor"/>
+                <circle cx="-25" cy="38" r="30" fill="currentColor"/>
+                <circle cx="-40" cy="-15" r="30" fill="currentColor"/>
+                <circle r="20" fill="#f0d2e6"/>
+                <circle r="10" fill="#c88cb5"/>
+            </g>
+        </svg>
+        <svg class="flower flower-br" viewBox="0 0 200 200">
+            <g transform="translate(100 100)">
+                <path d="M 0 -70 Q 35 -35 0 0 Q -35 -35 0 -70 Z" fill="currentColor"/>
+                <path d="M 0 -70 Q 35 -35 0 0 Q -35 -35 0 -70 Z" fill="currentColor" transform="rotate(72)"/>
+                <path d="M 0 -70 Q 35 -35 0 0 Q -35 -35 0 -70 Z" fill="currentColor" transform="rotate(144)"/>
+                <path d="M 0 -70 Q 35 -35 0 0 Q -35 -35 0 -70 Z" fill="currentColor" transform="rotate(216)"/>
+                <path d="M 0 -70 Q 35 -35 0 0 Q -35 -35 0 -70 Z" fill="currentColor" transform="rotate(288)"/>
+                <circle r="18" fill="#f8e3a0"/>
+            </g>
+        </svg>
+        <svg class="petal petal-1" viewBox="0 0 200 200">
+            <g transform="translate(100 100)">
+                <ellipse cx="0" cy="-50" rx="18" ry="42" fill="currentColor"/>
+                <ellipse cx="0" cy="-50" rx="18" ry="42" fill="currentColor" transform="rotate(72)"/>
+                <ellipse cx="0" cy="-50" rx="18" ry="42" fill="currentColor" transform="rotate(144)"/>
+                <ellipse cx="0" cy="-50" rx="18" ry="42" fill="currentColor" transform="rotate(216)"/>
+                <ellipse cx="0" cy="-50" rx="18" ry="42" fill="currentColor" transform="rotate(288)"/>
+                <circle r="16" fill="#f3c48b"/>
+            </g>
+        </svg>
+        <svg class="petal petal-2" viewBox="0 0 200 200">
+            <g transform="translate(100 100)">
+                <ellipse cx="0" cy="-50" rx="18" ry="42" fill="currentColor"/>
+                <ellipse cx="0" cy="-50" rx="18" ry="42" fill="currentColor" transform="rotate(72)"/>
+                <ellipse cx="0" cy="-50" rx="18" ry="42" fill="currentColor" transform="rotate(144)"/>
+                <ellipse cx="0" cy="-50" rx="18" ry="42" fill="currentColor" transform="rotate(216)"/>
+                <ellipse cx="0" cy="-50" rx="18" ry="42" fill="currentColor" transform="rotate(288)"/>
+                <circle r="16" fill="#f3c48b"/>
+            </g>
+        </svg>
+    </div>
     <div class="container" id="container">
+        <h1 class="title">Bravo, vous avez réussi le jeu !</h1>
+        <div class="title-ornament"></div>
         <p class="subtitle">Ajoutez vos plus belles photos en appuyant sur le bouton ci-dessous</p>
 
         <div class="drop-zone" id="dropZone">
