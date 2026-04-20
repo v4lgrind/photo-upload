@@ -73,7 +73,7 @@
 
         .upload-btn {
             display: inline-block;
-            background: #4A90A4;
+            background: #1e754b;
             color: #fff;
             border: none;
             padding: 1.1rem 2.5rem;
@@ -89,11 +89,11 @@
         }
 
         .upload-btn:hover {
-            background: #3d7a8c;
+            background: #19623f;
         }
 
         .upload-btn:active {
-            background: #356b7a;
+            background: #145234;
             transform: scale(0.98);
         }
 
@@ -126,6 +126,27 @@
             border-radius: 8px;
             padding: 0.75rem 1rem;
             margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .progress-thumb {
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 6px;
+            flex-shrink: 0;
+            background: #eee;
+        }
+
+        .progress-thumb.hidden {
+            display: none;
+        }
+
+        .progress-body {
+            flex: 1;
+            min-width: 0;
         }
 
         .progress-item .filename {
@@ -259,13 +280,25 @@
             const item = document.createElement('div');
             item.className = 'progress-item';
             item.innerHTML = `
-                <div class="filename">${escapeHtml(file.name)}</div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar"></div>
+                <img class="progress-thumb" alt="">
+                <div class="progress-body">
+                    <div class="filename">${escapeHtml(file.name)}</div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar"></div>
+                    </div>
+                    <div class="progress-status">0%</div>
                 </div>
-                <div class="progress-status">0%</div>
             `;
             progressList.appendChild(item);
+
+            const thumb = item.querySelector('.progress-thumb');
+            const objectUrl = URL.createObjectURL(file);
+            thumb.src = objectUrl;
+            thumb.addEventListener('load', () => URL.revokeObjectURL(objectUrl));
+            thumb.addEventListener('error', () => {
+                URL.revokeObjectURL(objectUrl);
+                thumb.classList.add('hidden');
+            });
 
             const bar = item.querySelector('.progress-bar');
             const status = item.querySelector('.progress-status');
